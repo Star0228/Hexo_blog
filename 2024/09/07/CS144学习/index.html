@@ -1,0 +1,930 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>CS144学习 | 逍遥信仰的笔记本</title><meta name="author" content="Star0228,axin2900@gmail.com"><meta name="copyright" content="Star0228"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="ffffff"><meta name="description" content="##课程记录 week2套接字     创建   绑定   关闭    TCP套接字      监听进程：专门用来分发用户端数据给服务器建立针对客户端专门的服务器进程   服务端在9999监听（PS ：8080 网页；21 FTP）     网络度量单位 比特率、带宽、包转发率   时延及限制因素            往返时延RRT   时延带宽积   讲道理是越大越好，因为标志了通道的数据发送">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144学习">
+<meta property="og:url" content="http://star0228.github.io/2024/09/07/CS144%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="逍遥信仰的笔记本">
+<meta property="og:description" content="##课程记录 week2套接字     创建   绑定   关闭    TCP套接字      监听进程：专门用来分发用户端数据给服务器建立针对客户端专门的服务器进程   服务端在9999监听（PS ：8080 网页；21 FTP）     网络度量单位 比特率、带宽、包转发率   时延及限制因素            往返时延RRT   时延带宽积   讲道理是越大越好，因为标志了通道的数据发送">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://star0228.github.io/img/favicon_pri.jpg">
+<meta property="article:published_time" content="2024-09-07T01:08:04.000Z">
+<meta property="article:modified_time" content="2024-09-18T04:21:17.216Z">
+<meta property="article:author" content="Star0228">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://star0228.github.io/img/favicon_pri.jpg"><link rel="shortcut icon" href="/img/star001.png"><link rel="canonical" href="http://star0228.github.io/2024/09/07/CS144%E5%AD%A6%E4%B9%A0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.12.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.32/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CS144学习',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-09-18 12:21:17'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', 'ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.1.1"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon_pri.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background: linear-gradient(20deg, #0062be, #925696, #cc426e, #fb0347)"><nav id="nav"><span id="blog-info"><a href="/" title="逍遥信仰的笔记本"><img class="site-icon" src="/img/STAR.png"/><span class="site-name">逍遥信仰的笔记本</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">CS144学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-09-07T01:08:04.000Z" title="发表于 2024-09-07 09:08:04">2024-09-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-09-18T04:21:17.216Z" title="更新于 2024-09-18 12:21:17">2024-09-18</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">7.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>23分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="CS144学习"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>##课程记录</p>
+<h3 id="week2"><a href="#week2" class="headerlink" title="week2"></a>week2</h3><h4 id="套接字"><a href="#套接字" class="headerlink" title="套接字"></a>套接字</h4><img src="/.io//image-20240918100509290.png" alt="image-20240918100509290" style="zoom:50%;">
+
+<img src="/.io//image-20240918100536012.png" alt="image-20240918100536012" style="zoom:50%;">
+
+<ol>
+<li><p>创建</p>
+<p><img src="/.io//image-20240918100609661.png" alt="image-20240918100609661"></p>
+</li>
+<li><p>绑定</p>
+<img src="/.io//image-20240918100643731.png" alt="image-20240918100643731" style="zoom:50%;">
+</li>
+<li><p>关闭</p>
+<img src="/.io//image-20240918100705539.png" alt="image-20240918100705539" style="zoom:50%;"></li>
+</ol>
+<ul>
+<li><p>TCP套接字</p>
+<img src="/.io//image-20240918100845010.png" alt="image-20240918100845010" style="zoom:50%;">
+
+<img src="/.io//image-20240918101454446.png" alt="image-20240918101454446" style="zoom:50%;">
+
+<ul>
+<li><p>监听进程：专门用来分发用户端数据给服务器建立针对客户端专门的服务器进程</p>
+<img src="/.io//image-20240918101241642.png" alt="image-20240918101241642" style="zoom:50%;">
+
+<p>服务端在9999监听（PS ：8080 网页；21 FTP）</p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="网络度量单位"><a href="#网络度量单位" class="headerlink" title="网络度量单位"></a>网络度量单位</h4><ul>
+<li><p>比特率、带宽、包转发率</p>
+<img src="/.io//image-20240918102154235.png" alt="image-20240918102154235" style="zoom:50%;">
+</li>
+<li><p>时延及限制因素</p>
+</li>
+</ul>
+  <img src="/.io//image-20240918102207679.png" alt="image-20240918102207679" style="zoom: 50%;">
+
+  <img src="/.io//image-20240918102420329.png" alt="image-20240918102420329" style="zoom:50%;">
+
+<ul>
+<li><p>往返时延RRT</p>
+<img src="/.io//image-20240918102647900.png" alt="image-20240918102647900" style="zoom:50%;">
+</li>
+<li><p>时延带宽积</p>
+<img src="/.io//image-20240918103812217.png" alt="image-20240918103812217" style="zoom:50%;">
+
+<p>讲道理是越大越好，因为标志了通道的数据发送量，而且时延影响基本上是毫秒级，可以忽略</p>
+</li>
+<li><p>吞吐量、有效吞吐量、利用率、丢包率</p>
+<img src="/.io//image-20240918104205226.png" alt="image-20240918104205226" style="zoom:50%;">
+</li>
+<li><p>时延抖动、延时丢包</p>
+<img src="/.io//image-20240918104412320.png" alt="image-20240918104412320" style="zoom:50%;"></li>
+</ul>
+<h4 id="物理层"><a href="#物理层" class="headerlink" title="物理层"></a>物理层</h4><p>网络中硬件设备和传输介质的种类繁多，通信方式也各不相同。物理层应尽可能屏蔽这些差异，让数据链路层感觉不到这些差异。</p>
+<h5 id="接口特性"><a href="#接口特性" class="headerlink" title="接口特性"></a>接口特性</h5><p>发送方的数据链路层将需要发送的帧交给物理层，传输后接收方的物理层将这些帧传递给接收方的数据链路层。</p>
+<img src="/.io//image-20240918115929300.png" alt="image-20240918115929300" style="zoom: 33%;">
+
+<p>具体地说，物理层确定与传输媒体接口有关的一些特性：</p>
+<ul>
+<li><p>机械特性 - 指明接口所用接线器的形状和尺寸、引线数目和排列、固定和锁定装置等</p>
+<img src="/.io//image-20240918120609445.png" alt="image-20240918120609445" style="zoom:50%;">
+</li>
+<li><p>电气特性 - 指明在接口电缆的各条线上出现的电压的范围</p>
+<img src="/.io//image-20240918120624349.png" alt="image-20240918120624349" style="zoom:50%;">
+</li>
+<li><p>功能特性 - 规定物理接口上各条信号线的功能分配和确切定义（各条线上出现各种电压表示何意义）</p>
+<img src="/.io//image-20240918120642479.png" alt="image-20240918120642479" style="zoom:50%;">
+</li>
+<li><p>规程特性 &#x2F; 过程特性 - 定义了各信号线的工作顺序和时序，使得比特流传输得以完成。</p>
+<img src="/.io//image-20240918120846347.png" alt="image-20240918120846347" style="zoom:50%;"></li>
+</ul>
+<h5 id="数据通信基础与基础概念"><a href="#数据通信基础与基础概念" class="headerlink" title="数据通信基础与基础概念"></a>数据通信基础与基础概念</h5><h3 id="007"><a href="#007" class="headerlink" title="007"></a>007</h3><h3 id="008"><a href="#008" class="headerlink" title="008"></a>008</h3><ol>
+<li>Encapsulation封装<br><img src="/.io//image00.png" alt="en"></li>
+</ol>
+<p><img src="/.io//image.png" alt="4layer"><br>4层</p>
+<ol start="2">
+<li><p>两种数据包构成<br><img src="/.io//image-1.png" alt="alt text"><br>数据包构成Hardware<br><img src="/.io//image-2.png" alt="alt text"><br>数据包构成software</p>
+</li>
+<li><p>Virtual Pravate Network<br><img src="/.io//image-3.png" alt="alt text"><br>ETH|IP|TCP|TLS|IP|TCP|HTTP|end_TCP_|…|end-ETH</p>
+</li>
+</ol>
+<h3 id="009Memory-Byte-Order-and-Packet-Formats"><a href="#009Memory-Byte-Order-and-Packet-Formats" class="headerlink" title="009Memory,Byte Order,and Packet Formats"></a>009Memory,Byte Order,and Packet Formats</h3><ol>
+<li>大小端</li>
+</ol>
+<p><img src="/.io//image-4.png" alt="alt text"></p>
+<h3 id="010Quiz"><a href="#010Quiz" class="headerlink" title="010Quiz"></a>010Quiz</h3><p><img src="/.io//image-5.png" alt="alt text"></p>
+<h3 id="011Answer"><a href="#011Answer" class="headerlink" title="011Answer"></a>011Answer</h3><table>
+<thead>
+<tr>
+<th align="center">Big</th>
+<th align="center">Little</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"></td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">√</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">√</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center">√</td>
+</tr>
+</tbody></table>
+<h3 id="012NetByte-Order"><a href="#012NetByte-Order" class="headerlink" title="012NetByte Order"></a>012NetByte Order</h3><p><strong>All protocols that are internet specifications use a Big-endian</strong></p>
+<ol>
+<li>IPV4数据包格式<br><img src="/.io//image-6.png" alt="alt text"></li>
+</ol>
+<ul>
+<li>最高65535字节(2^16)，取决于<code>Total Length</code>的数值，而它仅有16位长</li>
+<li>以大端形式存在</li>
+</ul>
+<h3 id="013Name-and-Address-IPv4"><a href="#013Name-and-Address-IPv4" class="headerlink" title="013Name and Address:IPv4"></a>013Name and Address:IPv4</h3><p><img src="/.io//image-7.png" alt="alt text"></p>
+<ul>
+<li>IPv4标识了互联网上的每一处设备</li>
+<li>IPv4每一位是8bit</li>
+<li>NetMask(子网掩码)，处于同一网络状态下的设备标识，从最高位开始计算，是一长串的1+一串0</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41207757/article/details/107839099">参考博客</a></p>
+<pre><code>- 子网掩码(subnet masking)的功能是告知主机或路由设备，地址的哪一部分是网络号，包括子网的网络号部分，哪一部分是主机号部分。
+
+- 子网掩码使用与IP地址相同的编址格式，即4个8位组的32位长格式。
+
+- 在子网掩码中，网络部分和子网络部分对应的位全为“1”，主机部分对应的位全为“0”
+
+- 通过将子网掩码与IP地址进行“与”操作,可提供所给定的IP地址所属的网络号(包括子网络号)
+&gt; 172.31.128.255/18
+&gt; 
+&gt;其中18就是子网掩码，表示32位中高18位是1，其它位为0。它的二进制形式为11111111.11111111.11000000.000000，转为十进制就是255.255.192.0，为了方便我们习惯于写单个数字18表示子网掩码
+
+![alt text](image-8.png)
+
+- 常见IP相关计算
+&gt; 例子: 给定IP地址和子网掩码 172.31.128.255 / 18
+
+&gt; 1. 网络号
+&gt;
+&gt; 公式：将IP地址的二进制和子网掩码的二进制进行“&amp;”（and）运算，得到的结果就是网络号。“&amp;运算”的规则是1&amp;1=1，0&amp;1=0，1&amp;0=0,0&amp;0=0。
+&gt;
+&gt; ip:        10101100.00011111.10000000.11111111  
+&gt;
+&gt; 子网掩码:　　11111111.11111111.11000000.00000000
+&gt;
+&gt; 网络号:     10101100.00011111.10000000.00000000   &amp;　
+&gt; 
+&gt; 网络号点分法表示: 172.31.128.0 
+</code></pre>
+<p>​<br>​    &gt; 2. 主机号<br>​    &gt;<br>​    &gt; 公式：用IP地址的二进制和（子网掩码的二进制的反码）进行“&amp;”运算，得到的结果就是主机号。反码就是将原本是0的变为1，原本是1的变为0。<br>​    &gt; ip:           10101100.00011111.10000000.11111111<br>​    &gt; 子网掩码取反:　　00000000.00000000.00111111.11111111<br>​    &gt; 主机号:        00000000.00000000.00000000.11111111   &amp;　<br>​    &gt; 主机号点分法表示: 0.0.0.255 </p>
+<p>​    &gt; 3. 广播地址<br>​    &gt;<br>​    &gt; 公式：在得到网络号的基础上，将网络号右边的表示IP地址的主机部分的二进制位全部填上1，再将得到的二进制数转换为十进制数就可以得到广播地址。因为本题中子网掩码是11111111.11111111.11000000.00000000， 0有14个，主机位是14，我们将网络号172.31.128.0，转换为二进制是 10101100.00011111.10000000.00000000，从右边数起，将14个0全部替换为1， 即：10101100.00011111.10111111.11111111，这就是这个子网的广播地址的二进制表示法。将这个二进制广播地址转换为十进制就是172.31.191.255<br>​    &gt;<br>​    &gt; 网络号:     10101100.00011111.10000000.00000000<br>​    &gt;<br>​    &gt; 子网掩码:　　11111111.11111111.11000000.00000000<br>​    &gt;<br>​    &gt; 广播地址:   10101100.00011111.10111111.11111111   网络号从右向左0填为1，个数为掩码中的0<br>​    &gt;<br>​    &gt; 广播地址点分法表示: 172.31.191.255  </p>
+<ul>
+<li>特殊的一类IP地址</li>
+</ul>
+<p><img src="/.io//image-11.png" alt="alt text"></p>
+<h3 id="014Quiz"><a href="#014Quiz" class="headerlink" title="014Quiz"></a>014Quiz</h3><img src="/.io//image-12.png" alt="alt text" style="zoom:50%;">
+No Yes No No Yes
+
+<h3 id="015Answer"><a href="#015Answer" class="headerlink" title="015Answer"></a>015Answer</h3><img src="/.io//image-13.png" alt="alt text" style="zoom:50%;">
+
+<h3 id="016Address-Structure-historical"><a href="#016Address-Structure-historical" class="headerlink" title="016Address Structure(historical)"></a>016Address Structure(historical)</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_41207757/article/details/107839099">参考博客</a></p>
+<ul>
+<li>ip地址的两种表示方式<ol>
+<li>原始的划分方式<br>  左边的某些连续位表示网络号，右边的某些连续位表示主机号，那么我们平常在讨论这一系列问题的时候，会有一个“网络地址”的概念，一般来说网络地址并不等于IP地址，网络地址就是IP地址中的网络号，将主机号置0，就可以得到网络地址。<blockquote>
+<p>IP地址 ::&#x3D; {&lt;网络号&gt;， &lt;主机号&gt;}，<br>  <img src="/.io//image-9.png" alt="alt text" style="zoom:50%;"></p>
+</blockquote>
+</li>
+<li>目前使用的最新方式：CIDR(Classless Inter-Domain Routing)<br>  CIDR中已经废弃了IP地址的分类，无分类编址的命名也是由此得来的，所以目前基本已经不再采用所谓的A类、B类、C类的IP地址分类表示法，网络号和主机号的划分与这个IP地址是A类、B类还是C类无关;<blockquote>
+<p>IP地址 ::&#x3D; {&lt;网络号&gt;， &lt;主机号&gt; &#x2F; &lt;子网掩码&gt;}</p>
+<p>例如192.168.8.2&#x2F;8代表192为网络号<br>  <img src="/.io//image-10.png" alt="alt text"></p>
+</blockquote>
+</li>
+</ol>
+</li>
+</ul>
+<h3 id="017Longest-Prefix-Match"><a href="#017Longest-Prefix-Match" class="headerlink" title="017Longest Prefix Match"></a>017Longest Prefix Match</h3><ol>
+<li>Forwarding table(转发表)</li>
+</ol>
+<ul>
+<li>link层转发，查找匹配，default是默认转发地址<img src="/.io//image-14.png" alt="alt text" style="zoom: 25%;"></li>
+</ul>
+<ol start="2">
+<li>Longest Prefix Match<br>最长匹配转发表(防止无脑转发0.0.0.0&#x2F;0此类默认端口)</li>
+</ol>
+<h3 id="018Quiz"><a href="#018Quiz" class="headerlink" title="018Quiz"></a>018Quiz</h3><img src="/.io//image-15.png" alt="alt text" style="zoom:25%;">
+A.3 B.4 C.1 D.1 E.2
+
+
+<h3 id="019Answer"><a href="#019Answer" class="headerlink" title="019Answer"></a>019Answer</h3><p>A.3 B.4 C.1 D.1 E.2</p>
+<h3 id="020ARP-Address-Resolution-Protocol"><a href="#020ARP-Address-Resolution-Protocol" class="headerlink" title="020ARP(Address Resolution Protocol)"></a>020ARP(Address Resolution Protocol)</h3><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/680244597">参考博客</a></p>
+<p>ARP（Address Resolution Protocol）是一个用于将IP地址映射到物理网络地址（MAC地址）的协议。在计算机网络中，每个设备都有一个唯一的MAC地址和IP地址，而ARP协议允许设备通过IP地址找到对应的MAC地址，以便进行通信。</p>
+<ul>
+<li><p>ARP协议的作用是将<strong>网络层（IP层）</strong>的地址映射到<strong>数据链路层（MAC层）</strong>的地址，以确保数据包能够正确地传递。</p>
+<ol>
+<li><p>当一个设备需要与另一个设备通信时：</p>
+</li>
+<li><p>首先使用ARP协议在本地网络中查找目标设备的MAC地址。</p>
+<ol>
+<li><p>如果目标设备的MAC地址已知，则数据包将直接发送到该地址。</p>
+</li>
+<li><p>如果目标设备的MAC地址未知，则ARP协议将广播一个请求，以请求目标设备回复其MAC地址。</p>
+</li>
+</ol>
+</li>
+<li><p>一旦ARP请求得到答复(单播)，设备就可以使用该MAC地址进行通信。</p>
+</li>
+</ol>
+</li>
+</ul>
+<img src="/.io//image-16.png" alt="alt text" style="zoom:25%;">
+![alt text](./CS144学习/image-17.png)
+
+<ul>
+<li><p>硬件类型（Hardware type）：为1表示以太网地址。</p>
+</li>
+<li><p>协议类型（Protocol type）： ARP协议的上层协议为IP协议，值为0x0800。</p>
+</li>
+<li><p>硬件地址长度（Hardware size）：MAC地址的长度，以字节为单位，该值为6。</p>
+</li>
+<li><p>协议地址长度（Protocol size）：IP地址的长度，以字节为单位，该值为4。</p>
+</li>
+<li><p>OP（Opcode）：操作码，表示该数据包为ARP请求或ARP应答。1表示ARP请求，2表示ARP应答。</p>
+</li>
+<li><p>源MAC地址：发送端的硬件地址。</p>
+</li>
+<li><p>源IP地址：发送端的协议（IP）地址，如 192.168.1.102。</p>
+</li>
+<li><p>目的MAC地址：接收端的硬件地址，在ARP请求时由于不知道接收端MAC地址，理论上该字段为广播地址，即48’hff_ff_ff_ff_ff_ff。但实际上通过ILA抓取ARP请求数据可知，该地址为0，可能是目的主机不会解析该数据吧，具体值是多少也就无所谓了。</p>
+</li>
+<li><p>目的IP地址：接收端的协议（IP）地址，如 192.168.1.10。</p>
+</li>
+</ul>
+<p><img src="/.io//image-18.png" alt="alt text"></p>
+<h3 id="021The-Internet-and-IP-Summary"><a href="#021The-Internet-and-IP-Summary" class="headerlink" title="021The Internet and IP(Summary)"></a>021The Internet and IP(Summary)</h3><img src="/.io//image-19.png" alt="alt text" style="zoom: 50%;">
+
+<h3 id="022"><a href="#022" class="headerlink" title="022"></a>022</h3><p>聊天课(水水得了)</p>
+<h3 id="023"><a href="#023" class="headerlink" title="023"></a>023</h3><p>Unit 2 Transcation</p>
+<h3 id="024TCP-Service"><a href="#024TCP-Service" class="headerlink" title="024TCP-Service"></a>024TCP-Service</h3><blockquote>
+<p>参考博客：<a target="_blank" rel="noopener" href="https://blog.csdn.net/crazymakercircle/article/details/114527369">TCP协议详解 (史上最全)-CSDN博客</a></p>
+</blockquote>
+<img src="/.io//image-20240908160411494.png" alt="image-20240908160411494" style="zoom:25%;">
+
+<ol>
+<li><p>数据输出↓</p>
+<ul>
+<li><p>应用层生成所要传输的数据</p>
+</li>
+<li><p>传输层接受本地的应用层上层数据，使用TCP协议，封装TCP头</p>
+</li>
+<li><p>网络层接受本地的传输层上层数据，使用IP协议，封装IP头</p>
+</li>
+<li><p>链接层接受本地的网络层上层数据，封装Link Frame(链接帧)–含MAC地址</p>
+</li>
+</ul>
+</li>
+<li><p>数据接收↑（TODO）</p>
+<ol>
+<li><p>交换机</p>
+<ul>
+<li><p>链接层接受远程的数据，拆除Link Frame(链接帧)–含MAC地址</p>
+</li>
+<li><p>网络层接受本地的传输层上层数据，使用IP协议，封装IP头</p>
+</li>
+<li><p>传输层接受本地的应用层上层数据，使用TCP协议，封装TCP头</p>
+</li>
+<li><p>应用层生成所要传输的数据</p>
+</li>
+</ul>
+</li>
+<li><p>主机</p>
+<ul>
+<li><p>链接层接受远程的数据，拆除Link Frame(链接帧)–含MAC地址</p>
+</li>
+<li><p>网络层接受本地的传输层上层数据，使用IP协议，封装IP头</p>
+</li>
+<li><p>传输层接受本地的应用层上层数据，使用TCP协议，封装TCP头</p>
+</li>
+<li><p>应用层生成所要传输的数据</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ol>
+<p><img src="/.io//e54b722ab1bb22360a71733ecd969c30.png" alt="e54b722ab1bb22360a71733ecd969c30"></p>
+<h4 id="Connection-setup-3-way-handshake-三次握手"><a href="#Connection-setup-3-way-handshake-三次握手" class="headerlink" title="Connection setup 3-way handshake(三次握手)"></a>Connection setup 3-way handshake(三次握手)</h4><img src="/.io//image-20240908164946617.png" alt="image-20240908164946617" style="zoom:50%;">
+
+<ol>
+<li>A-&gt;B Syn信号(synchronise同步消息)</li>
+<li>B-&gt;A Syn-Ack信号(synchronise+Acknowledge接受消息)</li>
+<li>A-&gt;B Ack信号(Acknowledge应答消息)</li>
+</ol>
+<h4 id="Connection-teardown-四次挥手关闭连接"><a href="#Connection-teardown-四次挥手关闭连接" class="headerlink" title="Connection teardown(四次挥手关闭连接)"></a>Connection teardown(四次挥手关闭连接)</h4><ol>
+<li>A-&gt;B Fin信号(Finish关闭A-&gt;B的信息传输)</li>
+<li>B-&gt;A (Data+)Ack信号：可能含有未传输的数据</li>
+<li>B-&gt;A Finish信号(关闭B-&gt;A的信息传输)</li>
+<li>A-&gt;B Ack信号(应答确认关闭)</li>
+</ol>
+<h4 id="TCP功能特性"><a href="#TCP功能特性" class="headerlink" title="TCP功能特性"></a>TCP功能特性</h4><img src="/.io//image-20240908191007117.png" alt="image-20240908191007117" style="zoom:50%;">
+
+<h4 id="TCP协议格式"><a href="#TCP协议格式" class="headerlink" title="TCP协议格式"></a>TCP协议格式</h4><img src="/.io//1dfea10f4e949615b62704b6fee37b5c.png" alt="1dfea10f4e949615b62704b6fee37b5c" style="zoom:50%;">
+
+<ol>
+<li><strong>源端口号</strong></li>
+</ol>
+<p>源端口号表示报文的发送端口，占16位。源端口和源IP地址组合起来，可以标识报文的发送地址。</p>
+<p><a target="_blank" rel="noopener" href="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml">Service Name and Transport Protocol Port Number Registry (iana.org)</a></p>
+<ol start="2">
+<li><strong>目的端口号</strong></li>
+</ol>
+<p>目的端口号表示报文的接收端口，占16位。目的端口和目的IP地址相结合，可以标识报文的接收地址。</p>
+<p><a target="_blank" rel="noopener" href="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml">Service Name and Transport Protocol Port Number Registry (iana.org)</a></p>
+<p>TCP协议是基于IP协议的基础上传输的，TCP报文中的源端口号+源IP，与TCP报文中的目的端口号+目的IP一起，组合起来唯一性的确定一条TCP连接。</p>
+<ol start="3">
+<li><strong>序号（Sequence Number）</strong></li>
+</ol>
+<p>TCP传输过程中，在发送端出的字节流中，传输报文中的数据部分的每一个字节都有它的编号。序号（Sequence Number）占32位，发起方发送数据时，都需要标记序号。</p>
+<p>序号（Sequence Number）的语义与SYN控制标志（Control Bits）的值有关。根据控制标志（Control Bits）中的SYN是否为1，序号（Sequence Number）表达不同的含义：</p>
+<ul>
+<li><p>当SYN &#x3D; 1时，当前为连接建立阶段，此时的序号为初始序号ISN((Initial Sequence Number)，通过算法来随机生成序号；</p>
+</li>
+<li><p>当SYN &#x3D; 0时在数据传输正式开始时，第一个报文的序号为 ISN + 1，后面的报文的序号，为前一个报文的SN值+TCP报文的净荷字节数(不包含TCP头)。比如，如果发送端发送的一个TCP帧的净荷为12byte，序号为5，则发送端接着发送的下一个数据包的时候，序号的值应该设置为5+12&#x3D;17。</p>
+</li>
+</ul>
+<p>在数据传输过程中，TCP协议通过序号（Sequence Number）对上层提供有序的数据流。发送端可以用序号来跟踪发送的数据量；接收端可以用序号识别出重复接收到的TCP包，从而丢弃重复包；对于乱序的数据包，接收端也可以依靠序号对其进行排序。</p>
+<ol start="4">
+<li><strong>确认序号（Acknowledgment Number）</strong></li>
+</ol>
+<p>确认序号（Acknowledgment Number）标识了报文接收端期望接收的字节序列。如果设置了ACK控制位，确认序号的值表示一个准备接收的包的序列码，注意，它所指向的是准备接收的包，也就是下一个期望接收的包的序列码。</p>
+<p>举个例子，假设发送端（如Client）发送3个净荷为1000byte、起始SN序号为1的数据包给Server服务端，Server每收到一个包之后，需要回复一个ACK响应确认数据包给Client。ACK响应数据包的ACK Number值，为每个Client包的为SN+包净荷，既表示Server已经确认收到的字节数，还表示期望接收到的下一个Client发送包的SN序号，具体的ACK值如下图左边的正常传输部分所示。<br><img src="/.io//97d4dbe47868bcae1662d69afabd31b2.png" alt="97d4dbe47868bcae1662d69afabd31b2" style="zoom: 50%;"></p>
+<blockquote>
+<p>图：传输过程的确认序号（Acknowledgment Number）值示例图</p>
+<p>在上图的左边部分，Server第1个ACK包的ACK Number值为1001，是通过Client第1个包的SN+包净荷&#x3D;1+1000计算得到，表示期望第2个Client包的SN序号为1001；Server第2个ACK包的ACK Number值为2001，为Client第2个包的SN+包净荷&#x3D;2001，表示期望第3个Server包的SN为2001，以此类推。</p>
+<p>如果发生错误，假设Server在处理Client的第二个发送包异常，Server仍然回复一个ACK Number值为1001的确认包，则Client的第二个数据包需要重复发送，具体的ACK值如上图右边的正常传输部分所示。</p>
+<p>只有控制标志的ACK标志为1时，数据帧中的确认序号ACKNumber才有效。TCP协议规定，连接建立后，所有发送的报文的ACK必须为1，也就是建立连接后，所有报文的确认序号有效。如果是SYN类型的报文，其ACK标志为0，故没有确认序号。</p>
+</blockquote>
+<ol start="5">
+<li><strong>头部长度</strong></li>
+</ol>
+<p>该字段占用4位，用来表示TCP报文首部的长度，单位是4bit位。其值所表示的并不是字节数，而是头部的所含有的32bit的数目（或者倍数），或者4个字节的倍数，所以TCP头部最多可以有60字节（4*15&#x3D;60）。没有任何选项字段的TCP头部长度为20字节，所以其头部长度为5，可以通过20&#x2F;4&#x3D;5计算得到。</p>
+<ol start="6">
+<li><strong>预留6位</strong></li>
+</ol>
+<p>头部长度后面预留的字段长度为6位，作为保留字段，暂时没有什么用处。</p>
+<ol start="7">
+<li><strong>控制标志</strong></li>
+</ol>
+<p>控制标志（Control Bits）共6个bit位，具体的标志位为：URG、ACK、PSH、RST、SYN、FIN。6个标志位的说明，如下表所示。</p>
+<p>表：TCP报文控制标志（Control Bits）说明</p>
+<table>
+<thead>
+<tr>
+<th align="center">标志位</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">URG</td>
+<td align="center">占1位，表示紧急指针字段有效。URG位指示报文段里的上层实体（数据）标记为“紧急”数据。当URG&#x3D;1时，其后的紧急指针指示紧急数据在当前数据段中的位置(相对于当前序列号的字节偏移量)，TCP接收方必须通知上层实体。</td>
+</tr>
+<tr>
+<td align="center">ACK</td>
+<td align="center">占1位，置位ACK&#x3D;1表示确认号字段有效；TCP协议规定，接建立后所有发送的报文的ACK必须为1；当ACK&#x3D;0时，表示该数据段不包含确认信息。当ACK&#x3D;1时，表示该报文段包括一个对已被成功接收报文段的确认序号Acknowledgment Number，该序号同时也是下一个报文的预期序号。</td>
+</tr>
+<tr>
+<td align="center">PSH</td>
+<td align="center">占1位，表示当前报文需要请求推（push）操作；当PSH&#x3D;1时，接收方在收到数据后立即将数据交给上层，而不是直到整个缓冲区满。</td>
+</tr>
+<tr>
+<td align="center">RST</td>
+<td align="center">占1位，置位RST&#x3D;1表示复位TCP连接；用于重置一个已经混乱的连接，也可用于拒绝一个无效的数据段或者拒绝一个连接请求。如果数据段被设置了RST位，说明报文发送方有问题发生。</td>
+</tr>
+<tr>
+<td align="center">SYN</td>
+<td align="center">占1位，在连接建立时用来同步序号。当SYN&#x3D;1而ACK&#x3D;0时，表明这是一个连接请求报文。对方若同意建立连接，则应在响应报文中使SYN&#x3D;1和ACK&#x3D;1。 综合一下，SYN置1就表示这是一个连接请求或连接接受报文。</td>
+</tr>
+<tr>
+<td align="center">FIN</td>
+<td align="center">占1位，用于在释放TCP连接时，标识发送方比特流结束，用来释放一个连接。当 FIN &#x3D; 1时，表明此报文的发送方的数据已经发送完毕，并要求释放连接。</td>
+</tr>
+</tbody></table>
+<p>在连接建立的三次握手过程中，若只是单个SYN置位，表示的只是建立连接请求。如果SYN和ACK同时置位为1，表示的建立连接之后的响应。</p>
+<ol start="8">
+<li><strong>窗口大小：</strong></li>
+</ol>
+<p>长度为16位，共2个字节。此字段用来进行流量控制。流量控制的单位为字节数，这个值是本端期望一次接收的字节数。</p>
+<ol start="9">
+<li><strong>校验和：</strong></li>
+</ol>
+<p>长度为16位，共2个字节。对整个TCP报文段，即TCP头部和TCP数据进行校验和计算，接收端用于对收到的数据包进行验证。</p>
+<ol start="10">
+<li><strong>紧急指针：</strong></li>
+</ol>
+<p>长度为16位，2个字节。它是一个偏移量，和SN序号值相加表示紧急数据最后一个字节的序号。</p>
+<p>以上十项内容是TCP报文首部必须的字段，也称固有字段，长度为20个字节。接下来是TCP报文的可选项和填充部分。</p>
+<ol start="11">
+<li><strong>可选项和填充部分</strong></li>
+</ol>
+<p>可选项和填充部分的长度为4n字节（n是整数），该部分是根据需要而增加的选项。如果不足4n字节，要加填充位，使得选项长度为32位（4字节）的整数倍，具体的做法是在这个字段中加入额外的零，以确保TCP头是32位（4字节）的整数倍。</p>
+<p>最常见的选项字段是MSS（Maximum Segment Size最长报文大小），每个连接方通常都在通信的第一个报文段（SYN标志为1的那个段）中指明这个选项字段，表示当前连接方所能接受的最大报文段的长度。</p>
+<p>由于可选项和填充部分不是必须的，所以TCP报文首部最小长度为20个字节。</p>
+<p>至此，TCP报文首部的字段，就全部介绍完了。TCP报文首部的后面，接着的是数据部分，不过数据部分是可选的。在一个连接建立和一个连接终止时，双方交换的报文段仅有TCP首部。如果一方没有数据要发送，也使用没有任何数据的首部来确认收到的数据，比如在处理超时的过程中，也会发送不带任何数据的报文段。</p>
+<p>总体来说，TCP协议的可靠性，主要通过以下几点来保障：</p>
+<ul>
+<li><p>应用数据分割成TCP认为最适合发送的数据块。这部分是通过MSS（最大数据包长度）选项来控制的，通常这种机制也被称为一种协商机制，MSS规定了TCP传往另一端的最大数据块的长度。值得注意的是，MSS只能出现在SYN报文段中，若一方不接收来自另一方的MSS值，则MSS就定为536字节。一般来讲，MSS值还是越大越好，这样可以提高网络的利用率。</p>
+</li>
+<li><p>重传机制。设置定时器，等待确认包，如果定时器超时还没有收到确认包，则报文重传。</p>
+</li>
+<li><p>对首部和数据进行校验。</p>
+</li>
+<li><p>接收端对收到的数据进行排序，然后交给应用层。</p>
+</li>
+<li><p>接收端丢弃重复的数据。</p>
+</li>
+<li><p>TCP还提供流量控制，主要是通过滑动窗口来实现流量控制。</p>
+</li>
+</ul>
+<h3 id="025UDP-Service"><a href="#025UDP-Service" class="headerlink" title="025UDP-Service"></a>025UDP-Service</h3><blockquote>
+<p>User Datagram Protocol用户数据报协议</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_63181097/article/details/138008227">UDP协议深度解析：从原理到应用全面剖析-CSDN博客</a></p>
+<h4 id="UDP格式"><a href="#UDP格式" class="headerlink" title="UDP格式"></a>UDP格式</h4><img src="/.io//image-20240908195745890.png" alt="image-20240908195745890" style="zoom:50%;">
+
+<p>UDP协议端格式是指UDP数据包的结构和组成部分。UDP协议端格式主要包括以下几个部分：</p>
+<ol>
+<li><strong>源端口号（Source Port）</strong>：这是一个16位的字段，用于标识发送方的应用程序所使用的端口号。通过这个端口号，接收方可以准确地知道是哪个应用程序发送的数据。</li>
+<li><strong>目的端口号（Destination Port）</strong>：同样是一个16位的字段，用于标识接收方的应用程序所使用的端口号。这确保了数据能够准确地被目标应用程序接收和处理。</li>
+<li><strong>长度（Length）</strong>：这也是一个16位的字段，它指示了UDP数据报的总长度，包括UDP头部和数据部分。这个长度信息对于接收方来说非常重要，因为它需要知道数据报的确切大小以便正确地进行接收和处理。</li>
+<li><strong>校验和（Checksum）</strong>：校验和是一个用于检测UDP数据报在传输过程中是否出现错误的16位字段。发送方会计算数据报的校验和，并将其附加在数据报中。接收方在接收到数据报后，会重新计算校验和，并与发送方提供的校验和进行比较，以检测数据报是否在传输过程中发生了错误。</li>
+<li><strong>数据（Data）</strong>：这是UDP数据报的可变长度部分，它包含了应用程序要传输的实际数据。数据的长度可以根据实际需求进行变化，最大可以达到65535字节（因为长度字段是16位，可以表示的最大数值是65535，减去头部8字节后，数据部分最大为65527字节）。</li>
+</ol>
+<p>值得注意的是，UDP协议是一种无连接的协议，这意味着在发送数据之前，发送方和接收方之间不需要建立连接。因此，UDP协议相对简单且高效，适用于那些对实时性要求较高且可以容忍少量数据丢失的应用场景，如实时音视频传输、在线游戏等。然而，由于UDP协议不提供可靠传输机制（如序号、确认、重传等），因此它并不适用于那些需要确保数据完整性和可靠性的应用场景。</p>
+<h4 id="UDP特性"><a href="#UDP特性" class="headerlink" title="UDP特性"></a>UDP特性</h4><img src="/.io//image-20240908195441026.png" alt="image-20240908195441026" style="zoom:50%;">
+
+<h3 id="026ICMP-Service"><a href="#026ICMP-Service" class="headerlink" title="026ICMP Service"></a>026ICMP Service</h3><blockquote>
+<p>Internet Control Message Protocol</p>
+</blockquote>
+<img src="/.io//image-20240908200423106.png" alt="image-20240908200423106" style="zoom:50%;">
+
+<img src="/.io//image-20240908200553323.png" alt="image-20240908200553323" style="zoom:33%;">
+
+<h4 id="ICMP的报文格式"><a href="#ICMP的报文格式" class="headerlink" title="ICMP的报文格式"></a>ICMP的报文格式</h4><ul>
+<li>ICMP报文包含在IP数据报中，IP报头在ICMP报文的最前面。</li>
+<li>一个ICMP报文包括IP报头（至少20字节）、ICMP报头（至少八字节）和ICMP报文（属于ICMP报文的数据部分）。</li>
+<li>当IP报头中的协议字段值为1时，就说明这是一个ICMP报文。</li>
+</ul>
+<p><img src="/.io//b5c177f8875b34440d1f8a2795f77df9.png" alt="b5c177f8875b34440d1f8a2795f77df9"></p>
+<p>字段说明：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>类型</td>
+<td>占一字节，标识ICMP报文的类型，从类型值来看ICMP报文可以分为两大类。第一类是取值为1~127的差错报文，第2类是取值128以上的信息报文</td>
+</tr>
+<tr>
+<td>代码</td>
+<td>占一字节，标识对应ICMP报文的代码。它与类型字段一起共同标识了ICMP报文的详细类型</td>
+</tr>
+<tr>
+<td>校验和</td>
+<td>这是对包括ICMP报文数据部分在内的整个ICMP数据报的校验和，以检验报文在传输过程中是否出现了差错（其计算方法与在我们介绍IP报头中的校验和计算方法是一样的）</td>
+</tr>
+</tbody></table>
+<p>ICMP大概分为两类报文：<br>一类是通知出错原因 ；一类是用于诊断查询<br>类型及含义如下：</p>
+<table>
+<thead>
+<tr>
+<th align="left">类型TYPE</th>
+<th align="left">代码CODE</th>
+<th align="left">用途|描述 Description</th>
+<th align="left">查询类Query</th>
+<th align="left">差错类Error</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>0</strong></td>
+<td align="left"><strong>0</strong></td>
+<td align="left"><strong>Echo Reply——回显应答（Ping应答）</strong></td>
+<td align="left"><strong>x</strong></td>
+<td align="left">****</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">0</td>
+<td align="left">Network Unreachable——网络不可达</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left"><strong>3</strong></td>
+<td align="left"><strong>1</strong></td>
+<td align="left"><strong>Host Unreachable——主机不可达</strong></td>
+<td align="left">****</td>
+<td align="left"><strong>x</strong></td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">2</td>
+<td align="left">Protocol Unreachable——协议不可达</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left"><strong>3</strong></td>
+<td align="left"><strong>3</strong></td>
+<td align="left"><strong>Port Unreachable——端口不可达</strong></td>
+<td align="left">****</td>
+<td align="left"><strong>x</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>3</strong></td>
+<td align="left"><strong>4</strong></td>
+<td align="left"><strong>Fragmentation needed but no frag. bit set——需要进行分片但设置不分片比特</strong></td>
+<td align="left">****</td>
+<td align="left"><strong>x</strong></td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">5</td>
+<td align="left">Source routing failed——源站选路失败</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">6</td>
+<td align="left">Destination network unknown——目的网络未知</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">7</td>
+<td align="left">Destination host unknown——目的主机未知</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">8</td>
+<td align="left">Source host isolated (obsolete)——源主机被隔离（作废不用）</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">9</td>
+<td align="left">Destination network administratively prohibited——目的网络被强制禁止</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">10</td>
+<td align="left">Destination host administratively prohibited——目的主机被强制禁止</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">11</td>
+<td align="left">Network unreachable for TOS——由于服务类型TOS，网络不可达</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">12</td>
+<td align="left">Host unreachable for TOS——由于服务类型TOS，主机不可达</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left"><strong>3</strong></td>
+<td align="left"><strong>13</strong></td>
+<td align="left"><strong>Communication administratively prohibited by filtering——由于过滤，通信被强制禁止</strong></td>
+<td align="left">****</td>
+<td align="left"><strong>x</strong></td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">14</td>
+<td align="left">Host precedence violation——主机越权</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">3</td>
+<td align="left">15</td>
+<td align="left">Precedence cutoff in effect——优先中止生效</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">4</td>
+<td align="left">0</td>
+<td align="left">Source quench——源端被关闭（基本流控制）</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">0</td>
+<td align="left">Redirect for network——对网络重定向</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left"><strong>5</strong></td>
+<td align="left"><strong>1</strong></td>
+<td align="left"><strong>Redirect for host——对主机重定向</strong></td>
+<td align="left">****</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">2</td>
+<td align="left">Redirect for TOS and network——对服务类型和网络重定向</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">5</td>
+<td align="left">3</td>
+<td align="left">Redirect for TOS and host——对服务类型和主机重定向</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left"><strong>8</strong></td>
+<td align="left"><strong>0</strong></td>
+<td align="left"><strong>Echo request——回显请求（Ping请求）</strong></td>
+<td align="left"><strong>x</strong></td>
+<td align="left">****</td>
+</tr>
+<tr>
+<td align="left">9</td>
+<td align="left">0</td>
+<td align="left">Router advertisement——路由器通告</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">10</td>
+<td align="left">0</td>
+<td align="left">Route solicitation——路由器请求</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left"><strong>11</strong></td>
+<td align="left"><strong>0</strong></td>
+<td align="left"><strong>TTL equals 0 during transit——传输期间生存时间为0</strong></td>
+<td align="left">****</td>
+<td align="left"><strong>x</strong></td>
+</tr>
+<tr>
+<td align="left">11</td>
+<td align="left">1</td>
+<td align="left">TTL equals 0 during reassembly——在数据报组装期间生存时间为0</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left"><strong>12</strong></td>
+<td align="left"><strong>0</strong></td>
+<td align="left"><strong>IP header bad (catchall error)——坏的IP首部（包括各种差错）</strong></td>
+<td align="left">****</td>
+<td align="left"><strong>x</strong></td>
+</tr>
+<tr>
+<td align="left">12</td>
+<td align="left">1</td>
+<td align="left">Required options missing——缺少必需的选项</td>
+<td align="left"></td>
+<td align="left">x</td>
+</tr>
+<tr>
+<td align="left">13</td>
+<td align="left">0</td>
+<td align="left">Timestamp request (obsolete)——时间戳请求（作废不用）</td>
+<td align="left">x</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">14</td>
+<td align="left"></td>
+<td align="left">Timestamp reply (obsolete)——时间戳应答（作废不用）</td>
+<td align="left">x</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">15</td>
+<td align="left">0</td>
+<td align="left">Information request (obsolete)——信息请求（作废不用）</td>
+<td align="left">x</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">16</td>
+<td align="left">0</td>
+<td align="left">Information reply (obsolete)——信息应答（作废不用）</td>
+<td align="left">x</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">17</td>
+<td align="left">0</td>
+<td align="left">Address mask request——地址掩码请求</td>
+<td align="left">x</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">18</td>
+<td align="left">0</td>
+<td align="left">Address mask reply——地址掩码应答</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<h4 id="常见的ICMP报文"><a href="#常见的ICMP报文" class="headerlink" title="常见的ICMP报文"></a>常见的ICMP报文</h4><ul>
+<li><strong>相应请求</strong></li>
+</ul>
+<p>我们用的ping操作中就包括了相应请求（类型字段值为8）和应答（类型字段值为0）ICMP报文。<br>过程：<br>一台主机向一个节点发送一个类型字段值为8的ICMP报文，如果途中没有异常（如果没有被路由丢弃，目标不回应ICMP或者传输失败），则目标返回类型字段值为0的ICMP报文，说明这台主机存在。</p>
+<ul>
+<li><strong>目标不可达，源抑制和超时报文</strong></li>
+</ul>
+<p>这三种报文的格式是一样的。</p>
+<ol>
+<li>目标不可到达报文（类型值为3）在路由器或者主机不能传递数据时使用。<br>例如：我们要连接对方一个不存在的系统端口（端口号小于1024）时，将返回类型字段值3、代码字段值为3的ICMP报文。<br><strong>常见的不可到达类型还有网络不可到达（代码字段值为0）、主机不可达到（代码字段值为1）、协议不可到达（代码字段值为2）等等。</strong></li>
+<li>源抑制报文（类型字段值为4，代码字段值为0）则充当一个控制流量的角色，通知主机减少数据报流量。由于ICMP没有回复传输的报文，所以只要停止该报文，主机就会逐渐恢复传输速率。</li>
+<li>无连接方式网络的问题就是数据报会丢失，或者长时间在网络游荡而找不到目标，或者拥塞导致主机在规定的时间内无法重组数据报分段，这时就要触发ICMP超时报文的产生。超时报文（类型字段值为11）的代码域有两种取值：代码字段值为0表示传输超时，代码字段值为1表示分段重组超时。</li>
+</ol>
+<ul>
+<li><strong>时间戳请求</strong></li>
+</ul>
+<p>时间戳请求报文（类型值字段13）和时间戳应答报文（类型值字段14）用于测试两台主机之间数据报来回一次的传输时间。<br>传输时，主机填充原始时间戳，接受方收到请求后填充接受时间戳后以类型值字段14的报文格式返回，发送方计算这个时间差。<br>(有些系统不响应这种报文)</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="http://star0228.github.io">Star0228</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="http://star0228.github.io/2024/09/07/CS144%E5%AD%A6%E4%B9%A0/">http://star0228.github.io/2024/09/07/CS144学习/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://star0228.github.io" target="_blank">逍遥信仰的笔记本</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/favicon_pri.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-full"><a href="/2024/09/04/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%91%BD%E4%BB%A4/" title="区块链命令"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">区块链命令</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/favicon_pri.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Star0228</div><div class="author-info__description">晴空收集ing</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">9</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/star0228"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/star0228" target="_blank" title="Github"><i class="fab fa-github" style="color: #000000;"></i></a><a class="social-icon" href="mailto:axin2900@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #000000;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Welcome to my Notebook</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#week2"><span class="toc-number">1.</span> <span class="toc-text">week2</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A5%97%E6%8E%A5%E5%AD%97"><span class="toc-number">1.1.</span> <span class="toc-text">套接字</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%BA%A6%E9%87%8F%E5%8D%95%E4%BD%8D"><span class="toc-number">1.2.</span> <span class="toc-text">网络度量单位</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%B1%82"><span class="toc-number">1.3.</span> <span class="toc-text">物理层</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E7%89%B9%E6%80%A7"><span class="toc-number">1.3.1.</span> <span class="toc-text">接口特性</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%80%9A%E4%BF%A1%E5%9F%BA%E7%A1%80%E4%B8%8E%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="toc-number">1.3.2.</span> <span class="toc-text">数据通信基础与基础概念</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#007"><span class="toc-number">2.</span> <span class="toc-text">007</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#008"><span class="toc-number">3.</span> <span class="toc-text">008</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#009Memory-Byte-Order-and-Packet-Formats"><span class="toc-number">4.</span> <span class="toc-text">009Memory,Byte Order,and Packet Formats</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#010Quiz"><span class="toc-number">5.</span> <span class="toc-text">010Quiz</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#011Answer"><span class="toc-number">6.</span> <span class="toc-text">011Answer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#012NetByte-Order"><span class="toc-number">7.</span> <span class="toc-text">012NetByte Order</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#013Name-and-Address-IPv4"><span class="toc-number">8.</span> <span class="toc-text">013Name and Address:IPv4</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#014Quiz"><span class="toc-number">9.</span> <span class="toc-text">014Quiz</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#015Answer"><span class="toc-number">10.</span> <span class="toc-text">015Answer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#016Address-Structure-historical"><span class="toc-number">11.</span> <span class="toc-text">016Address Structure(historical)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#017Longest-Prefix-Match"><span class="toc-number">12.</span> <span class="toc-text">017Longest Prefix Match</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#018Quiz"><span class="toc-number">13.</span> <span class="toc-text">018Quiz</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#019Answer"><span class="toc-number">14.</span> <span class="toc-text">019Answer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#020ARP-Address-Resolution-Protocol"><span class="toc-number">15.</span> <span class="toc-text">020ARP(Address Resolution Protocol)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#021The-Internet-and-IP-Summary"><span class="toc-number">16.</span> <span class="toc-text">021The Internet and IP(Summary)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#022"><span class="toc-number">17.</span> <span class="toc-text">022</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#023"><span class="toc-number">18.</span> <span class="toc-text">023</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#024TCP-Service"><span class="toc-number">19.</span> <span class="toc-text">024TCP-Service</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Connection-setup-3-way-handshake-%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B"><span class="toc-number">19.1.</span> <span class="toc-text">Connection setup 3-way handshake(三次握手)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Connection-teardown-%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E5%85%B3%E9%97%AD%E8%BF%9E%E6%8E%A5"><span class="toc-number">19.2.</span> <span class="toc-text">Connection teardown(四次挥手关闭连接)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#TCP%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7"><span class="toc-number">19.3.</span> <span class="toc-text">TCP功能特性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#TCP%E5%8D%8F%E8%AE%AE%E6%A0%BC%E5%BC%8F"><span class="toc-number">19.4.</span> <span class="toc-text">TCP协议格式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#025UDP-Service"><span class="toc-number">20.</span> <span class="toc-text">025UDP-Service</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#UDP%E6%A0%BC%E5%BC%8F"><span class="toc-number">20.1.</span> <span class="toc-text">UDP格式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#UDP%E7%89%B9%E6%80%A7"><span class="toc-number">20.2.</span> <span class="toc-text">UDP特性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#026ICMP-Service"><span class="toc-number">21.</span> <span class="toc-text">026ICMP Service</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ICMP%E7%9A%84%E6%8A%A5%E6%96%87%E6%A0%BC%E5%BC%8F"><span class="toc-number">21.1.</span> <span class="toc-text">ICMP的报文格式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84ICMP%E6%8A%A5%E6%96%87"><span class="toc-number">21.2.</span> <span class="toc-text">常见的ICMP报文</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/07/CS144%E5%AD%A6%E4%B9%A0/" title="CS144学习">CS144学习</a><time datetime="2024-09-07T01:08:04.000Z" title="发表于 2024-09-07 09:08:04">2024-09-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/09/04/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%91%BD%E4%BB%A4/" title="区块链命令">区块链命令</a><time datetime="2024-09-04T01:47:13.000Z" title="发表于 2024-09-04 09:47:13">2024-09-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/06/14/SRTP%E8%AE%B0%E5%BD%95/" title="SRTP记录">SRTP记录</a><time datetime="2024-06-14T13:11:07.000Z" title="发表于 2024-06-14 21:11:07">2024-06-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2024/05/29/git%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" title="git常用命令">git常用命令</a><time datetime="2024-05-29T01:05:53.000Z" title="发表于 2024-05-29 09:05:53">2024-05-29</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2024 By Star0228</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Hi, welcome to my <a href="https://star0228.github.io">blog</a>!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat-btn" type="button" title="聊天"><i class="fas fa-sms"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.12.0"></script><script src="/js/main.js?v=4.12.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.32/dist/fancybox/fancybox.umd.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu@4.0.7/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><div class="js-pjax"></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="true"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/dist/click-show-text.min.js" data-mobile="false" data-text="关,关,难,过,关,关,过,前,路,漫,漫,亦,灿,灿" data-fontsize="15px" data-random="false" async="async"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
